@@ -1,6 +1,10 @@
 <script setup>
 import $ from "jquery";
 import axios from "axios"
+
+import SvgIcon from '@jamescoyle/vue-icon'
+import { mdiTreasureChest } from '@mdi/js'
+
 </script>
 
 <template>
@@ -8,14 +12,14 @@ import axios from "axios"
     <div>Current facing: {{ facing }}</div>
     <div>Curr coord: {{ curr_coord }}</div>
     <div>Next coord: {{ next_coord }}</div>
-    <div>Moves Left: {{ total_movement }}</div>
+    <div>Moves Left: {{ movement_point }}</div>
     <div>Money Available: {{ total_money }}</div>
     <div>Money Collected: {{ money_collected }}</div>
     <div>Total Earnings: {{ total_earning }}</div>
   </div>
   <br>
   <div>
-    <button @click="save_game_result"> Save game result into json</button>
+    <button v-if="movement_point == 0" @click="save_game_result"> Save game result into json</button>
   </div>
   <br>
 
@@ -25,12 +29,18 @@ import axios from "axios"
           <tr v-for="row in map_size" row="" col="" >
               <td v-for="col in map_size" 
                 v-bind:id="`cell_${row}_${col}`" 
-                :class="row==1 && col==1 ? 'selected' : ''" 
+                :class="row==1 && col==1 ? 'selected' : '' " 
+
                 :row=row
                 :col=col
                 :money=money_map[row-1][col-1]
               >
-                {{ money_map[row-1][col-1]}}
+                <!--  -->
+                <svg-icon v-if="money_map[row-1][col-1] > 0" type="mdi" :path="path_treasure"></svg-icon>
+                <!-- <span class="mdi mdi-treasure-chest"></span>
+
+                <span v-if="money_map[row-1][col-1] > 0" class="mdi mdi-treasure-chest"></span> -->
+                <!-- {{ money_map[row-1][col-1]}} -->
               </td>
           </tr>
       </tbody>
@@ -42,8 +52,22 @@ table, th, td {
   border: 1px solid;
 }
 .selected{
-  background-color: purple;
+  background-color: limegreen;
+  
 }
+.east{
+  background-image: url('../assets/east.svg')
+}
+.west{
+  background-image: url('../assets/west.svg')
+}
+.north{
+  background-image: url('../assets/north.svg')
+}
+.south{
+  background-image: url('../assets/south.svg')
+}
+
 table {
   table-layout: fixed;
 }
@@ -68,13 +92,15 @@ export default {
         facing:"EAST",
         curr_coord: [1,1],
         next_coord: [1,2],
-        total_movement: 15,
+        movement_point: 15,
         movement_log: [1,1],
         interest_rate: getRndInteger(5, 25),
         money_collected: 0,
         total_money: 0,
         total_earning:0,
-        my_ip: ""
+        my_ip: "",
+        path_treasure: mdiTreasureChest,
+        // path_arrow_right: mdiArrowRightBoldHexagonOutline,
     }
   },
   methods: {
@@ -99,10 +125,12 @@ export default {
         this.facing = "EAST"
         this.next_coord = [this.curr_coord[0], this.curr_coord[1]+1]
       }
+
+      $('.selected').removeClass("north south east west").addClass(this.facing.toLowerCase());
     },
     move(event) {  
-      if (this.total_movement <= 0) {
-        alert("u r out of move")
+      if (this.movement_point <= 0) {
+        alert("Game over: out of movement points. You can save the game result to the server")
         return 
       } else if(
           this.next_coord[0]>this.map_size || 
@@ -110,12 +138,14 @@ export default {
           this.next_coord[0] < 1 || 
           this.next_coord[1] < 1
         ) {
-        alert("ga bs maju gan! tar masuk jurang!")
+        alert("Oops.. stay away from the cliff side please!")
         return 
       }
-      $(`#cell_${this.curr_coord[0]}_${this.curr_coord[1]}`).removeClass('selected')
+      $(`#cell_${this.curr_coord[0]}_${this.curr_coord[1]}`).removeClass('selected north south east west')
 
       $(`#cell_${this.next_coord[0]}_${this.next_coord[1]}`).addClass('selected')
+
+
       this.curr_coord = this.next_coord
       
       if(this.facing == "NORTH"){
@@ -130,10 +160,11 @@ export default {
       else if(this.facing == "EAST"){
         this.next_coord = [this.curr_coord[0], this.curr_coord[1]+1]
       }
-      this.total_movement--
+      this.movement_point--
       this.movement_log.push(this.curr_coord)
       this.money_collected += parseInt($('.selected').attr("money"))
-      $('.selected').attr("money", 0).text(0)
+      $('.selected').attr("money", 0).empty()
+
       if (this.total_earning == 0) this.total_earning = this.money_collected
       this.total_earning += this.total_earning*(this.interest_rate/100)
       // console.log()
@@ -165,20 +196,26 @@ export default {
   mounted() {
     document.addEventListener( "keydown", this.keyPressedManager );
     this.get_ip_address()
+    $('.selected').addClass('east')
   },
   created(){
-    for(let x=0;x<5;x++){
+    for(let row=0;row<this.map_size;row++){
       let temp=[]
-      for(let x=0;x<5;x++){
+      for(let col=0;col<this.map_size;col++){
+        
         let zonk_or_not = Math.round(Math.random())
         let money = 0
-        if (zonk_or_not > 0) money = getRndInteger(500,20000)
+        if (row == 0 && col == 0) {}
+        else if (zonk_or_not > 0) money = getRndInteger(500,20000)
         temp.push(money)
         this.total_money += money
       }
       money_map.push(temp)
     }
     // console.log(money_map)
-  }
+  },
+  components: {
+		SvgIcon
+	},
 }
 </script>
