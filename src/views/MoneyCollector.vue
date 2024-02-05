@@ -104,7 +104,9 @@ export default {
         total_earning:0,
         my_ip: "",
         path_treasure: mdiTreasureChest,
-        is_placed:false
+        is_placed:false,
+        degree:90,
+        degree_arr: {0: "NORTH", 90: "EAST", 180: "SOUTH", 270: "WEST"}
     }
   },
   methods: {
@@ -113,22 +115,45 @@ export default {
       if(event.key == " "){
         this.move(event)
       }
-      else if(event.key == "ArrowUp"){
-        this.facing = "NORTH"
-        this.next_coord = [this.curr_coord[0]-1, this.curr_coord[1]]
-      }
-      else if(event.key == "ArrowDown"){
-        this.facing = "SOUTH"
-        this.next_coord = [this.curr_coord[0]+1, this.curr_coord[1]]
-      }
       else if(event.key == "ArrowLeft"){
-        this.facing = "WEST"
-        this.next_coord = [this.curr_coord[0], this.curr_coord[1]-1]
+        this.degree -= 90
+        if (this.degree < 0) this.degree = 270
       }
       else if(event.key == "ArrowRight"){
-        this.facing = "EAST"
+        this.degree += 90
+        if (this.degree >= 360) this.degree = 0
+      }
+      this.facing = this.degree_arr[this.degree]
+
+      if(this.facing == "NORTH"){
+        this.next_coord = [this.curr_coord[0]-1, this.curr_coord[1]]
+      }
+      else if(this.facing == "SOUTH"){
+        this.next_coord = [this.curr_coord[0]+1, this.curr_coord[1]]
+      }
+      else if(this.facing == "WEST"){
+        this.next_coord = [this.curr_coord[0], this.curr_coord[1]-1]
+      }
+      else if(this.facing == "EAST"){
         this.next_coord = [this.curr_coord[0], this.curr_coord[1]+1]
       }
+
+      // else if(event.key == "ArrowUp"){
+      //   this.facing = "NORTH"
+      //   this.next_coord = [this.curr_coord[0]-1, this.curr_coord[1]]
+      // }
+      // else if(event.key == "ArrowDown"){
+      //   this.facing = "SOUTH"
+      //   this.next_coord = [this.curr_coord[0]+1, this.curr_coord[1]]
+      // }
+      // else if(event.key == "ArrowLeft"){
+      //   this.facing = "WEST"
+      //   this.next_coord = [this.curr_coord[0], this.curr_coord[1]-1]
+      // }
+      // else if(event.key == "ArrowRight"){
+      //   this.facing = "EAST"
+      //   this.next_coord = [this.curr_coord[0], this.curr_coord[1]+1]
+      // }
 
       $('.selected').removeClass("north south east west").addClass(this.facing.toLowerCase());
     },
@@ -137,7 +162,7 @@ export default {
         alert("Game over: out of movement points. You can save the game result to the server")
         return 
       } else if(this.money_remaining == 0){
-        alert("Game over: All available money have been collected, Congratz. You can save the game result to the server")
+        alert("Game over: All available money have been collected, Congratz! You can save the game result to the server")
         return 
       }
       else if(
