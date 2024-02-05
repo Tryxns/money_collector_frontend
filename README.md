@@ -27,3 +27,8 @@ npm run dev
 ```sh
 npm run build
 ```
+
+### Back End Service to save the game result
+```
+https://github.com/Tryxns/money_collector_backend
+```
