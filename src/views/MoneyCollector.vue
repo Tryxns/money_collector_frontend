@@ -202,6 +202,7 @@ export default {
       })
       .catch(function (error) {
         console.log(error);
+        alert(error.message)
       });
     },
     get_ip_address(){
